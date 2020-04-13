@@ -65,13 +65,13 @@
                                         <span>
                                             <van-icon size="14px" name="like-o" />
                                             <span style="font-size:10px" >
-                                            12
+                                             {{item.loves.length}} 
                                             </span>
                                         </span>
                                         <span>
                                         <van-icon size="14px" name="star-o"/>
                                             <span style="font-size:10px">
-                                            134
+                                            {{item.collects ? item.collects.length : '' }}
                                             </span>
                                         </span>
                                     </span>
@@ -153,6 +153,7 @@ export default {
                 if (this.listdata.length == this.list.length) {
                     this.finished = true;
                 }
+                this.getCollect()  // 收藏
             })
         },
         onRefresh() {
@@ -162,13 +163,28 @@ export default {
             // 将 loading 设置为 true，表示处于加载状态
             this.loading = true;
             this.onLoad();
+            
         },
         // 查看食谱详情
 		recipeDetails(item){
 			console.log(item,'item的详情')
 			this.$store.commit('getrecipedetails',{recipedetails:item}) 
 			this.$router.push({name:'recipedetail'})
-		},
+        },
+        //收藏数
+        getCollect(){
+            for(let i=0;i<this.list.length;i++){
+                this.$axios.get('/collectsList',{
+                    params:{
+                        type : 'recipe',
+                        favorite : this.list[i]._id
+                    }
+                }).then(res=>{
+                     this.list[i].collects = res.data
+                    //console.log(res.data,'这是收藏的文章')
+                })
+            }
+        }
     },
 }
 </script>

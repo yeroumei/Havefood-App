@@ -41,9 +41,9 @@
                             <p class="lists_p">{{item.title}}</p>
                             
                             <span class="lists_s">{{item.time}}</span>
-                            <van-icon size="20px" name="eye-o" style="position: absolute;bottom:14px;right:65px;" />
+                            <van-icon size="20px" name="like-o" style="position: absolute;bottom:14px;right:65px;" />
                             <span style="position: absolute;bottom:17px;right:6px;font-size:12px">
-                                浏览 12 次
+                                获赞 {{item.loves.length}} 次
                             </span>
                             <nut-avatar
                                 style="position: absolute;bottom:14px;right:165px;" 
@@ -82,9 +82,9 @@
                             <p class="lists_p">{{item.title}}</p>
                             
                             <span class="lists_s">{{item.time}}</span>
-                            <van-icon size="20px" name="eye-o" style="position: absolute;bottom:14px;right:65px;" />
+                            <van-icon size="20px" name="like-o" style="position: absolute;bottom:14px;right:65px;" />
                             <span style="position: absolute;bottom:17px;right:6px;font-size:12px">
-                                浏览 12 次
+                                获赞 {{item.loves.length}} 次
                             </span>
                             <nut-avatar
                                 style="position: absolute;bottom:14px;right:165px;" 
@@ -123,9 +123,9 @@
                             <p class="lists_p">{{item.title}}</p>
                             
                             <span class="lists_s">{{item.time}}</span>
-                            <van-icon size="20px" name="eye-o" style="position: absolute;bottom:14px;right:65px;" />
+                            <van-icon size="20px" name="like-o" style="position: absolute;bottom:14px;right:65px;" />
                             <span style="position: absolute;bottom:17px;right:6px;font-size:12px">
-                                浏览 12 次
+                                获赞 {{item.loves.length}} 次
                             </span>
                             <nut-avatar
                                 style="position: absolute;bottom:14px;right:165px;" 
@@ -200,7 +200,6 @@ export default {
         //  关注
         onlove(item) {
             if(this.$store.state.userinfo.username){ //验证已登录
-                    // console.log(item.username,this.$store.state.userinfo.username,result,'this.result')
             var result = this.fansdata.some(resp=>{
                 if(resp.parent_id==item.username && resp.fans_id==this.$store.state.userinfo.username){
                     return true 

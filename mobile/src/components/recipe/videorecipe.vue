@@ -27,7 +27,7 @@
 					<span class="lists_s">{{item.time}}</span>
                         <van-icon name="like-o" style="position: absolute;bottom:14px;right:65px;" />
                         <span style="position: absolute;bottom:17px;right:6px;font-size:12px">
-                            获赞 12 次
+                            获赞 {{item.loves.length}} 次
                         </span>
                         <nut-avatar
                             style="position: absolute;bottom:14px;right:165px;" 

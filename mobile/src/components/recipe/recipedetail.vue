@@ -18,7 +18,7 @@
             <p v-if="$store.state.recipedetails.style == 'image'" class="bg" :style="{'background': 'url('+$store.state.recipedetails.cover_pic+') center /cover no-repeat','background-size': 'cover'}"></p>
             <div class="title">
 				<h2 class="name">{{$store.state.recipedetails.title}}</h2>
-				<span class="look">获赞188 ， 收藏188</span>
+				<span class="look">获赞  {{$store.state.recipedetails.loves.length}} ， 收藏  {{this.collects.length}}</span>
 			</div>
             <div class="comment">
 				<div class="user">
@@ -44,15 +44,15 @@
 				</h2>
                 <ul>
                     <li v-if="!checkall2" class="text_p">
-                        <span>{{$store.state.recipedetails.menu[0].list}}</span>
-                        <span style="color: #666;">{{$store.state.recipedetails.menu[0].size}}</span>
+                        <span>{{$store.state.recipedetails.menu ? $store.state.recipedetails.menu[0].list :'' }}</span>
+                        <span style="color: #666;">{{$store.state.recipedetails.menu ? $store.state.recipedetails.menu[0].size :''}}</span>
                     </li>
                     <li v-if="!checkall2" class="text_p">
-                        <span>{{$store.state.recipedetails.menu[1].list}}</span>
+                        <span>{{$store.state.recipedetails.menu ? $store.state.recipedetails.menu[1].list :''}}</span>
                         <span style="color: #666;">{{$store.state.recipedetails.menu[1].size}}</span>
                     </li>
-                    <li v-if="checkall2" class="text_p"  v-for="item in $store.state.recipedetails.menu">
-                        <span>{{item.list}}</span>
+                    <li v-if="checkall2 && $store.state.recipedetails" class="text_p"  v-for="item in $store.state.recipedetails.menu">
+                        <span>{{$store.state.recipedetails.menu ?item.list :''}}</span>
                         <span style="color: #666;">{{item.size}}</span>
                     </li>
                     <van-divider @click="checkall2 = !checkall2">{{checkall2 ? '收回' : '查看'}}<van-icon name="arrow-down" style="padding-left:6px" /></van-divider>
@@ -68,6 +68,11 @@
             <p style="font-size:14px;color:#ccc;padding:1em">完、有我有你有美食~</p>
 		</section>
         <button class="topbtn" ref="totop" @click="goTop()"></button>
+
+		<nut-buttongroup style="position:fixed;bottom:0">
+            <van-button :icon="$store.state.recipedetails.loves.indexOf($store.state.userinfo.username) == -1 ? 'like-o': 'like' " color="#ff5151" plain hairline style="width:100%" @click="onlove">点赞 {{$store.state.recipedetails.loves.length}}</van-button>
+            <van-button :icon="flag ? 'star' : 'star-o' " color="#ff5151" plain hairline style="width:100%" @click="onCollect">收藏  {{this.collects.length}}</van-button>
+        </nut-buttongroup>
     </main>
 </template>
 
@@ -76,12 +81,15 @@ export default {
     data() {
         return {
             checkall:false,
-            checkall2:false,
+			checkall2:false,
+			collects:[],
+            flag:''
         }
     },
     mounted() {
         this.$store.state.recipedetails.time =  new Date(this.$store.state.recipedetails.time).format("yyyy-MM-dd hh:ss:mm");
 		this.needScroll()
+		this.getCollect()
     },
     methods: {
         back(){
@@ -116,6 +124,74 @@ export default {
                     clearInterval(self.timer)
                 }
             }, 30)
+		},
+		//  点赞
+        onlove(item) {
+            if(this.$store.state.userinfo.username){ //验证已登录
+                var flag = this.$store.state.recipedetails.loves.indexOf(this.$store.state.userinfo.username);
+                if (flag !== -1) {
+                    this.$store.state.recipedetails.loves.splice(flag, 1);
+                } else {
+                    this.$store.state.recipedetails.loves.push(this.$store.state.userinfo.username);
+                }
+                this.$axios
+                    .post("/loveRecipe", {
+                    loves: this.$store.state.recipedetails.loves,
+                    _id: this.$store.state.recipedetails._id
+                    })
+                    .then(res => {
+						this.$store.commit('getnewsdetails',{recipedetails:res.data[0]}) 
+                        console.log(res.data, "谁点赞了呢");
+                });
+            }else{
+                this.$router.push({path:'/login'})
+                console.log('请先登录')
+            }
+        },
+        onCollect(){
+            if(this.flag){
+                this.$axios
+                    .post("/deleteCollects", {
+                        user : this.$store.state.userinfo.username, 
+                        type: 'recipe',
+                        favorite : this.$store.state.recipedetails._id, 
+                    })
+                    .then(res => {
+                        this.getCollect()
+                        this.flag = false
+                        console.log(res.data,'谁不收藏我了')
+                });
+            }else{
+                this.$axios
+                    .post("/addCollects", {
+                        user : this.$store.state.userinfo.username, 
+                        type: 'recipe',
+                        favorite : this.$store.state.recipedetails._id, 
+                    })
+                    .then(res => {
+                        this.getCollect()
+                        this.flag = true
+                        console.log(res.data,'谁收藏我了')
+                });
+            }
+        },
+        getCollect(){
+            this.$axios.get('/collectsList',{
+                params:{
+                    type : 'recipe',
+                    favorite : this.$store.state.recipedetails._id
+                }
+            }).then(res=>{
+                this.collects = res.data
+                for(let i = 0;i < res.data.length;i++){
+                    if(res.data[i].user == this.$store.state.userinfo.username){
+                        this.flag = true
+                    }else{
+                        this.flag = false
+                    }
+                }
+                console.log(res.data,'这是收藏的文章')
+            })
         }
     },
 }
