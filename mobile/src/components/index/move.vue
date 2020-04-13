@@ -71,8 +71,17 @@
                   <!-- <a class="desk">{{item.content}}</a> -->
                   <a class="shows_img">
                     <p class="p_title">{{item.content}}</p>
-                    <img v-if="item.media.type == 'image'" v-for="p in item.media.matter" :src="p" @click="ImagePreview(item.media.matter)" />
-					          <van-image-preview v-model="preview" :images="images"></van-image-preview>
+                          <van-image
+                          v-if="item.media.type == 'image'"
+                            v-for="p in item.media.matter"
+                            :src="p" 
+                            @click="ImagePreview(item.media.matter)"
+                          width="93"
+                          height="93"
+                          fit="cover"
+                          style="padding-right:3px"
+                        />
+                     <van-image-preview width="100%"  height="100%" v-model="preview" :images="images"></van-image-preview>
                     <video
                       v-if="item.media.type == 'video'"
                       :src="item.media.matter"
@@ -124,8 +133,16 @@
                   <!-- <a class="desk">{{item.content}}</a> -->
                   <a class="shows_img">
                     <p class="p_title">{{item.content}}</p>
-                    <img v-if="item.media.type == 'image'" v-for="p in item.media.matter" :src="p" @click="ImagePreview(item.media.matter)" />
-                    <van-image-preview v-model="preview" :images="images"></van-image-preview>
+                      <van-image
+                          v-if="item.media.type == 'image'"
+                            v-for="p in item.media.matter"
+                            :src="p" 
+                            @click="ImagePreview(item.media.matter)"
+                          width="93"
+                          height="93"
+                          style="padding-right:3px"
+                        />
+                   <van-image-preview width="100%"  height="100%" v-model="preview" :images="images"></van-image-preview>
                     <video
                     v-if="item.media.type == 'video'"
                     :src="item.media.matter"
