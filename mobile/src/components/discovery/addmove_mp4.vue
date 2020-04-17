@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import { Toast } from 'vant';
+import { Toast, Dialog } from 'vant';
 export default {
     data() {
         return {
@@ -52,9 +52,35 @@ export default {
             previewImg:'',
         }
     },
+    mounted() {
+        this.getInit()
+    },
     methods: {
         back(){
-            this.$router.go(-1)
+            if(this.previewImg !== '' || this.content !== ''){
+                Dialog.confirm({
+                    title: '',
+                    message: '保留本次编辑？',
+                    confirmButtonText:'保留',
+                    cancelButtonText:'不保留'
+                }).then(() => {
+                    this.$store.commit('getmovevideo',{movevideo:{
+                        previewImg : this.previewImg, 
+                        content : this.content, 
+                    }}) 
+                    this.$router.go(-1)
+                }).catch(() => {
+                    this.$store.commit('getmovevideo',{movevideo:''}) 
+                    window.localStorage.removeItem('movevideo')
+                    console.log('不保留')
+                    this.$router.go(-1)
+                })
+            }else{
+                this.$store.commit('getmovevideo',{movevideo:''}) 
+                window.localStorage.removeItem('movevideo')
+                console.log('不保留')
+                this.$router.go(-1)
+            }
         },
         // 上传素材
         onSuccess(file,res){
@@ -137,6 +163,18 @@ export default {
                         this.$router.replace({path:'/recommend'})
                     },1200)
                 })
+            }
+        },
+        getInit(){
+            if(this.$store.state.movevideo){
+                this.content = this.$store.state.movevideo.content
+                this.previewImg = this.$store.state.movevideo.previewImg
+                // if(this.$store.state.moveimg.media){
+                //     this.media = this.$store.state.moveimg.media
+                //     for(let i=0;i<this.$store.state.moveimg.media.length;i++){
+                //         this.fileList.push({url:this.$store.state.moveimg.media[i]}) 
+                //     }
+                // }
             }
         }
     },

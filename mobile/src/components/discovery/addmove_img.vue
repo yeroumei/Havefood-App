@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import { Toast } from 'vant';
+import { Toast, Dialog } from 'vant';
 export default {
     data() {
         return {
@@ -27,11 +27,38 @@ export default {
             fileList:[],
             media:[],
             flagnum:'',
+            arr:[]
         }
+    },
+    mounted(){
+        this.getInit()
     },
     methods: {
         back(){
-            this.$router.go(-1)
+            if(this.media.length !== 0 || this.content !== ''){
+                Dialog.confirm({
+                    title: '',
+                    message: '保留本次编辑？',
+                    confirmButtonText:'保留',
+                    cancelButtonText:'不保留'
+                }).then(() => {
+                    this.$store.commit('getmoveimg',{moveimg:{
+                        media : this.media, 
+                        content : this.content, 
+                    }}) 
+                    this.$router.go(-1)
+                }).catch(() => {
+                    this.$store.commit('getmoveimg',{moveimg:''}) 
+                    window.localStorage.removeItem('moveimg')
+                    console.log('不保留')
+                    this.$router.go(-1)
+                })
+            }else{
+                this.$store.commit('getmoveimg',{moveimg:''}) 
+                window.localStorage.removeItem('moveimg')
+                console.log('不保留')
+                this.$router.go(-1)
+            }
         },
         afterread(file){
             let params = new FormData(); //创建form对象
@@ -47,23 +74,23 @@ export default {
             this.$axios.post('/upload',params,config).then(res=>{
                 console.log(res.data,'res.data')
                 this.media.push(res.data.result.url)
-                // this.steps.push({temp:'',img:res.data.result.url})
-                // console.log(this.steps)
             })
         },
         beforedelete(file){
-            // let url = "";
-            console.log(this.fileList)
-            console.log(file.file.name,'删除')
             for(var i=0;i<this.fileList.length;i++){
-                if(this.fileList[i].file.name == file.file.name){
-                    this.flagnum = i
+                if(this.fileList[i].file){
+                    if(this.fileList[i].file && this.fileList[i].file.name == file.file.name){
+                        this.flagnum = i
+                    }
+                }else{
+                    if(file.url === this.fileList[i].url){
+                        this.flagnum = i
+                    }
                 }
             }
             this.$axios.post('/deleteImg',{
                 url:this.media[this.flagnum]
             }).then(res => {
-                console.log(res.data,this.media[this.flagnum],'删除成功')
                 this.fileList.splice(this.flagnum,1)
                 this.media.splice(this.flagnum,1)
             })
@@ -71,7 +98,6 @@ export default {
         addMoving(){
             console.log('发布成功')
             var time = new Date();
-            console.log(time,'发布时间')
             if(this.content == ''){
                 Toast({
                     message:'请先输入你要分享的内容',
@@ -106,6 +132,18 @@ export default {
                         this.$router.replace({path:'/recommend'})
                     },1200)
                 })
+            }
+        },
+        getInit(){
+            if(this.$store.state.moveimg){
+                this.content = this.$store.state.moveimg.content
+                if(this.$store.state.moveimg.media){
+                    this.media = this.$store.state.moveimg.media
+                    for(let i=0;i<this.$store.state.moveimg.media.length;i++){
+                        this.fileList.push({url:this.$store.state.moveimg.media[i]}) 
+                    }
+                }
+                
             }
         }
     },

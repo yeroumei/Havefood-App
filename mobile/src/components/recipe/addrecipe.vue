@@ -36,14 +36,23 @@
             />
         </div>
         <div class="des">
-            <nut-textbox 
+            <van-field
+            v-model="des"
+            rows="3"
+            autosize
+            type="textarea"
+            maxlength="300"
+            placeholder="请输入留言"
+            />
+            <!-- <nut-textbox 
                 :switchMax="true" 
                 :txtAreaH="100"
                 :maxNum="300"
                 :placeText="'简单描述一下这道菜吧~'"   
+                :value="des"
                 @inputFunc="inputText"
             >
-            </nut-textbox>
+            </nut-textbox> -->
         </div>
         
         <nut-row v-for="(item,index) in menu" style="border-bottom: 1px solid #f5f5f5; ">
@@ -136,11 +145,18 @@ export default {
             fileList: [],
             temp:[],
             steps:[],
-            flagnum:''
+            flagnum:'',
+            initdata:''
         }
     },
     mounted() {
         this.getclassfiy()
+        this.getInit()
+    },
+    destroyed() {
+        this.$store.commit('getrecipedetails',{recipedetails:''}) 
+        window.localStorage.removeItem('recipedetails')
+        // this.$store.commit('recipedetails','')  //置空detail
     },
     methods: {
         back(){
@@ -151,30 +167,59 @@ export default {
                     confirmButtonText:'是',
                     cancelButtonText:'否'
                 }).then(() => {
-                    console.log('存为草稿')
-                    this.$axios.post('/addRecipe',{
-                        title: this.title,
-                        cover_pic: this.previewImg,
-                        author: this.$store.state.userinfo.username,
-                        des: this.des,
-                        type: this.selects,
-                        menu: this.menu,
-                        step: this.steps,
-                        time: new Date(),
-                        style: this.previewType,
-                        status: 2, //草稿 2
-                    }).then(res=>{
-                        console.log(res.data,'存入成功')
-                        setTimeout(()=>{
-                            this.$router.replace({path:'/recommend'})
-                        },1200)
-                    })
+                    if(this.$store.state.recipedetails){
+                        this.$axios.post('/updateRecipe',{
+                            _id: this.$store.state.recipedetails._id,
+                            title: this.title,
+                            cover_pic: this.previewImg,
+                            author: this.$store.state.userinfo.username,
+                            des: this.des,
+                            type: this.selects,
+                            menu: this.menu,
+                            step: this.steps,
+                            time: new Date(),
+                            style: this.previewType,
+                            status: 2, //草稿 2
+                        }).then(res=>{
+                            console.log(res.data,'更新草稿成功')
+                            setTimeout(()=>{
+                                this.$router.go(-1)
+                            },1200)
+                        })
+                    }else{
+                            console.log('更新草稿成功0022')
+                        this.$axios.post('/addRecipe',{
+                            title: this.title,
+                            cover_pic: this.previewImg,
+                            author: this.$store.state.userinfo.username,
+                            avatar : this.$store.state.userinfo.avatar,
+                            des: this.des,
+                            type: this.selects,
+                            menu: this.menu,
+                            step: this.steps,
+                            time: new Date(),
+                            style: this.previewType,
+                            status: 2, //草稿 2
+                        }).then(res=>{
+                            console.log(res.data,'存入成功')
+                            setTimeout(()=>{
+                                this.$router.replace({path:'/recommend'})
+                            },1200)
+                        })
+                    }
                 }).catch(() => {
+                    if(this.$store.state.recipedetails){
+                        this.$axios.post('/deleteRecipe',{
+                            _id: this.$store.state.recipedetails._id,
+                        }).then(res=>{
+                            console.log('删除草稿成功')
+                        })
+                    }
                     this.$router.go(-1)
                 });
             }else{
+                console.log('更新草稿成功222')
                 this.$router.go(-1)
-
             }
         },
         // 选择分类
@@ -262,9 +307,9 @@ export default {
             alert('上传失败！');
         },
         //描述
-        inputText(des){
-            this.des = des
-        },
+        // inputText(des){
+        //     this.des = des
+        // },
         // 上传步骤图片
         afterread(file){
             let params = new FormData(); //创建form对象
@@ -278,6 +323,7 @@ export default {
             };
             // let url = "";
             this.$axios.post('/upload',params,config).then(res=>{
+                console.log(res.data,'zhehi')
                 this.steps.push({temp:'',img:res.data.result.url})
                 console.log(this.steps)
             })
@@ -301,6 +347,46 @@ export default {
             })
             
         },
+        getInit(){
+            console.log(this.$route.params.id,'this.$route.params.id')
+            if(this.$route.params.id){
+                this.$axios.get('/recipeList',{
+                    params:{
+                        _id:this.$route.params.id
+                    }
+                }).then(resp=>{
+                    this.initdata = resp.data[0]
+                    if(this.initdata.cover_pic){
+                        this.previewImg = this.initdata.cover_pic
+                    }
+                    if(this.initdata.title){
+                        this.title = this.initdata.title
+                    }
+                    if(this.initdata.des){
+                        console.log(this.initdata.des,'woshi描述呢')
+                        this.des = this.initdata.des
+                        console.log(this.des,'描述呢')
+                    }
+                    if(this.initdata.type){
+                        this.selects = this.initdata.type
+                    }
+                    if(this.initdata.menu){
+                        this.menu = this.initdata.menu
+                    }
+                    if(this.initdata.style){
+                        this.previewType = this.initdata.style
+                    }
+                    if(this.initdata.step.length !== 0){
+                        this.steps = this.initdata.step
+                        for(let i=0;i<this.initdata.step.length;i++){
+                            this.fileList.push({url:this.initdata.step[i].img})
+                        }
+                    }
+                    console.log(this.initdata,'initdata')
+                })
+            }
+            
+        }
     },
 }
 </script>

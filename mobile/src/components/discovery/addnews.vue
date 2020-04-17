@@ -109,7 +109,8 @@ export default {
             fileList:[],
             newsdata:[{sub:'',text:'',img:[]}],
             flagnum1:'',
-            flagnum2:''
+            flagnum2:'',
+            initdata:''
         }
     },
     methods: {
@@ -129,21 +130,47 @@ export default {
                             }
                         }
                     }
-                    this.$axios.post('/addNews',{
-                        cover_pic : this.previewImg, 
-                        title : this.title, 
-                        author : this.$store.state.userinfo.username, 
-                        avatar : this.$store.state.userinfo.avatar,
-                        media : this.newsdata, 
-                        time : new Date(),
-                        status : 2,
-                    }).then(res => {
-                        console.log(res.data)
-                        setTimeout(()=>{
-                            this.$router.replace({path:'/recommend'})
-                        },1200)
-                    })
+                    if(this.$store.state.newsdetails){
+                        this.$axios.post('/sureNews',{
+                            _id: this.$store.state.newsdetails._id,
+                            cover_pic : this.previewImg, 
+                            title : this.title, 
+                            author : this.$store.state.userinfo.username, 
+                            avatar : this.$store.state.userinfo.avatar,
+                            media : this.newsdata, 
+                            time : new Date(),
+                            status : 2,
+                        }).then(res => {
+                            console.log(res.data)
+                            setTimeout(()=>{
+                                this.$router.go(-1)
+                            },1200)
+                        })
+                    }else{
+                        this.$axios.post('/addNews',{
+                            cover_pic : this.previewImg, 
+                            title : this.title, 
+                            author : this.$store.state.userinfo.username, 
+                            avatar : this.$store.state.userinfo.avatar,
+                            media : this.newsdata, 
+                            time : new Date(),
+                            status : 2,
+                        }).then(res => {
+                            console.log(res.data)
+                            setTimeout(()=>{
+                                this.$router.replace({path:'/recommend'})
+                            },1200)
+                        })
+                    }
+                    
                 }).catch(() => {
+                    if(this.$store.state.newsdetails){
+                        this.$axios.post('/deleteNews',{
+                            _id: this.$store.state.newsdetails._id,
+                        }).then(res=>{
+                            console.log('删除草稿成功')
+                        })
+                    }
                     this.$router.go(-1)
                 });
                     
@@ -182,15 +209,12 @@ export default {
             };
             let url = "";
             this.$axios.post('/upload',params,config).then(res=>{
-                // this.steps.push({temp:'',img:res.data.result.url})
                 for(let i=0;i<this.newsdata.length;i++){ 
-                    // console.log(file)
                     console.log(this.newsdata[i],'img0')
                     if(this.newsdata[i].img){
                         for(let j=0;j<this.newsdata[i].img.length;j++){
                             if(file.file.name == this.newsdata[i].img[j].file.name){
                                 this.newsdata[i].img[j].url = res.data.result.url
-                                // console.log(this.newsdata[i].img[j])
                             }
                         }
                     }
@@ -276,6 +300,7 @@ export default {
                     cover_pic : this.previewImg, 
                     title : this.title, 
                     author : this.$store.state.userinfo.username, 
+                    avatar : this.$store.state.userinfo.avatar,
                     media : this.newsdata, 
                     time : time,
                     status : 1,
@@ -286,7 +311,38 @@ export default {
                     },1200)
                 })
             }
+        },
+        getInit(){
+            this.initdata = this.$store.state.newsdetails
+            if(this.initdata.cover_pic){
+                this.previewImg = this.initdata.cover_pic
+            }
+            if(this.initdata.title){
+                this.title = this.initdata.title
+            }
+            if(this.initdata.media && this.initdata.media.length !== 0){
+                let arr = []
+                for(var i=0;i<this.initdata.media.length;i++){
+                    arr = []
+                    if(this.initdata.media[i].img){
+                        for(var j=0;j<this.initdata.media[i].img.length;j++){
+                            arr.push({url : this.initdata.media[i].img[j]})
+                        }
+                    this.initdata.media[i].img = arr
+                    }
+                }
+                this.newsdata = this.initdata.media
+            }
+            console.log(this.initdata,'initdata')
         }
+    },
+    mounted() {
+        this.getInit()
+    },
+    destroyed() {
+        this.$store.commit('getnewsdetails',{newsdetails:''}) 
+        window.localStorage.removeItem('newsdetails')
+        // this.$store.commit('recipedetails','')  //置空detail
     },
 }
 </script>
