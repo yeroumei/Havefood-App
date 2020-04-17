@@ -47,13 +47,13 @@
 		<mt-cell title="消息通知"  to="/login" is-link style="overflow: hidden;" class="new">
 		  <img slot="icon" src="../../assets/images/news.png" width="27" height="27">
 		</mt-cell>
-		<mt-cell title="我的发布"  to="/login" is-link style="overflow: hidden;">
+		<mt-cell title="我的发布"  to="/mysends" is-link style="overflow: hidden;">
 		  <img slot="icon" src="../../assets/images/send.png" width="27" height="27">
 		</mt-cell>
-		<mt-cell title="我的草稿"  to="/login" is-link style="overflow: hidden;">
+		<mt-cell title="我的草稿"  to="/myedit" is-link style="overflow: hidden;">
 		  <img slot="icon" src="../../assets/images/label.png" width="27" height="27">
 		</mt-cell>
-		<mt-cell title="我的收藏"  to="/login" is-link style="overflow: hidden;">
+		<mt-cell title="我的收藏"  to="/mycollects" is-link style="overflow: hidden;">
 		  <img slot="icon" src="../../assets/images/love.png" width="27" height="27">
 		</mt-cell>
 		<mt-cell title="关于我们"  to="/about" is-link style="overflow: hidden;">

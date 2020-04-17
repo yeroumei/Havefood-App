@@ -19,6 +19,9 @@ import videorecipe from '../components/recipe/videorecipe.vue'
 import breakfast from '../components/recipe/breakfast.vue'
 import search from '../components/discovery/search.vue'
 import newslist from '../components/discovery/newslist.vue'
+import mycollects from '../components/user/mycollects.vue'
+import mysends from '../components/user/mysends.vue'
+import myedit from '../components/user/myedit.vue'
 // import my from '../components/index/my.vue'
 
 Vue.use(Router)
@@ -161,6 +164,27 @@ export default new Router({
       path: '/newslist',
       name: 'newslist',
       component: newslist,
-    }
+    },
+    {
+      path: '/mycollects',
+      name: 'mycollects',
+      component: mycollects,
+      // * 需要登录才能访问
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/mysends',
+      name: 'mysends',
+      component: mysends,
+      // * 需要登录才能访问
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/myedit',
+      name: 'myedit',
+      component: myedit,
+      // * 需要登录才能访问
+      meta: { requiresAuth: true },
+    },
   ]
 })
